@@ -1,0 +1,20 @@
+version: "3.8" # Используйте актуальную версию синтаксиса Docker Compose
+
+services:
+  mongodb:
+    image: mongo:latest # Используем последнюю стабильную версию MongoDB
+    container_name: todo-mongodb # Произвольное имя для вашего контейнера
+    ports:
+      - "27017:27017" # Маппинг портов: HOST_PORT:CONTAINER_PORT
+    environment:
+      # Опционально: Настройки аутентификации (для prod обязательно, для dev можно опустить)
+      # MONGO_INITDB_ROOT_USERNAME: your_username
+      # MONGO_INITDB_ROOT_PASSWORD: your_password
+      MONGO_INITDB_DATABASE: todo-app-db # Имя базы данных, которая будет создана при первом запуске
+    volumes:
+      - mongodb_data:/data/db # Маппинг данных: HOST_VOLUME:CONTAINER_PATH
+      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # Опционально: для инициализации данных
+    restart: always # Всегда перезапускать контейнер, если он падает
+
+volumes:
+  mongodb_data: # Объявление именованного тома для постоянного хранения данных
