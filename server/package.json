@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed",
+    "prisma:generate": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +20,8 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "prisma": "^6.12.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.1.0",
     "dotenv": "^17.2.1",

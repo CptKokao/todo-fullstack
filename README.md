@@ -99,6 +99,7 @@
     npx tsc --init # Создать tsconfig.json
     ```
 2.  **Конфигурация tsconfig.json**
+
     ```json
     {
       "compilerOptions": {
@@ -113,21 +114,21 @@
     }
     ```
 
-````
 3.  **Конфигурация nodemon.json**
-  ```json
-  {
+
+    ```json
+    {
       "watch": ["src"],
       "ext": "ts",
       "ignore": ["dist"],
       "exec": "ts-node src/index.ts"
-  }
-````
+    }
+    ```
 
 4.  **Настройте Prisma:**
 
     ```bash
-    npx prisma init --datasource-provider mongodb
+    npx prisma init --datasource-provider postgresql
     ```
 
     Это создаст папку `prisma` с файлом `schema.prisma`. Откройте `prisma/schema.prisma` и добавьте следующую модель:
@@ -139,7 +140,7 @@
     }
 
     datasource db {
-      provider = "mongodb"
+      provider = "postgresql"
       url      = env("DATABASE_URL")
     }
 

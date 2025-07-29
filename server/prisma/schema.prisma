@@ -1,0 +1,23 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql" // ИЗМЕНЕНО: Сменили провайдера на postgresql
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        Int      @id @default(autoincrement()) // ИЗМЕНЕНО: ID теперь Int и автоинкремент
+    email     String   @unique
+    password  String
+    createdAt DateTime @default(now()) @db.Timestamptz(3) // ИЗМЕНЕНО: Тип для даты
+    updatedAt DateTime @updatedAt @db.Timestamptz(3) // ИЗМЕНЕНО: Тип для даты
+}
+
+model Todo {
+    id          Int     @id @default(autoincrement()) // ИЗМЕНЕНО: ID теперь Int и автоинкремент
+    title       String
+    description String?
+    userId      Int // ИЗМЕНЕНО: userId теперь Int
+}

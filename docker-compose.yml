@@ -1,20 +1,21 @@
-version: "3.8" # Используйте актуальную версию синтаксиса Docker Compose
+# docker-compose.yml
+version: "3.8"
 
 services:
-  mongodb:
-    image: mongo:latest # Используем последнюю стабильную версию MongoDB
-    container_name: todo-mongodb # Произвольное имя для вашего контейнера
-    ports:
-      - "27017:27017" # Маппинг портов: HOST_PORT:CONTAINER_PORT
+  db: # Имя вашего сервиса базы данных
+    image: postgres # Используем официальный образ PostgreSQL (версия 16, легкий Alpine-вариант)
+    container_name: todo-postgresql # Удобное имя для контейнера
     environment:
-      # Опционально: Настройки аутентификации (для prod обязательно, для dev можно опустить)
-      # MONGO_INITDB_ROOT_USERNAME: your_username
-      # MONGO_INITDB_ROOT_PASSWORD: your_password
-      MONGO_INITDB_DATABASE: todo-app-db # Имя базы данных, которая будет создана при первом запуске
+      POSTGRES_DB: todo-app-db # Имя базы данных, которую создастся при первом запуске
+      POSTGRES_USER: myuser # Имя пользователя для подключения к БД
+      POSTGRES_PASSWORD: mypassword # Пароль для пользователя БД
+      # PGDATA: /var/lib/postgresql/data/pgdata # Можно указать кастомный путь внутри контейнера для данных
     volumes:
-      - mongodb_data:/data/db # Маппинг данных: HOST_VOLUME:CONTAINER_PATH
-      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # Опционально: для инициализации данных
+      - postgres_data:/var/lib/postgresql/data # Маппинг данных: сохраняем данные в Docker Volume
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Опционально: для выполнения SQL-скриптов при первом запуске
+    ports:
+      - "5432:5432" # Пробрасываем порт PostgreSQL контейнера на хост-машину
     restart: always # Всегда перезапускать контейнер, если он падает
 
 volumes:
-  mongodb_data: # Объявление именованного тома для постоянного хранения данных
+  postgres_data: # Объявление именованного тома для постоянного хранения данных
