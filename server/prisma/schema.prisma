@@ -8,16 +8,23 @@ datasource db {
 }
 
 model User {
-    id        Int      @id @default(autoincrement()) // ИЗМЕНЕНО: ID теперь Int и автоинкремент
+    id        Int      @id @default(autoincrement())
     email     String   @unique
     password  String
-    createdAt DateTime @default(now()) @db.Timestamptz(3) // ИЗМЕНЕНО: Тип для даты
-    updatedAt DateTime @updatedAt @db.Timestamptz(3) // ИЗМЕНЕНО: Тип для даты
+    todos     Todo[]
+    createdAt DateTime @default(now()) @db.Timestamptz(3)
+    updatedAt DateTime @updatedAt @db.Timestamptz(3)
 }
 
 model Todo {
-    id          Int     @id @default(autoincrement()) // ИЗМЕНЕНО: ID теперь Int и автоинкремент
+    id          Int     @id @default(autoincrement())
     title       String
     description String?
-    userId      Int // ИЗМЕНЕНО: userId теперь Int
+    completed   Boolean @default(false)
+
+    createdAt DateTime @default(now()) @db.Timestamptz(3)
+    updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+    userId Int
+    User   User @relation(fields: [userId], references: [id])
 }
