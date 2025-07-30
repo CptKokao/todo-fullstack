@@ -1,179 +1,210 @@
-# Приложение TODO
+---
 
-Это простое TODO-приложение с использованием современного стека технологий: **React** для клиентской части, **Node.js (Express)** для серверной части и **MongoDB** в качестве базы данных, управляемой с помощью **Prisma ORM**.
+# Приложение Todo Fullstack
+
+Это полнофункциональное приложение Todo, созданное с использованием **React** на фронтенде и **Node.js (Express)** с **Prisma ORM** на бэкенде. Для хранения данных используется **PostgreSQL**, а аутентификация реализована с помощью **JWT-токенов**.
 
 ---
 
-## Особенности
+## Возможности
 
-- **Полный CRUD-функционал:** Создание, чтение, обновление и удаление задач.
-- **Современный стек:** Node.js, React, MongoDB, Prisma.
-- **Типизация:** Использование TypeScript как на фронтенде, так и на бэкенде для улучшенной стабильности и разработки.
-- **Изолированная база данных:** MongoDB запускается в контейнере Docker для легкости настройки и управления.
+- **Аутентификация пользователя**: Регистрация и вход в систему с использованием JWT-токенов.
+- **Управление задачами (CRUD)**:
+  - Создание новых задач (Todo).
+  - Просмотр списка всех задач текущего пользователя.
+  - Редактирование заголовка и описания существующих задач.
+  - Отметка задач как выполненных/невыполненных.
+  - Удаление задач.
+- **Гибкая база данных**: Изначально приложение работало с MongoDB, но теперь полностью переведено на **PostgreSQL** для строгой схемы и надежных миграций.
+- **Современный UI**: Фронтенд стилизован с помощью **Tailwind CSS**.
+- **Разделение логики**: Приложение разделено на клиентскую и серверную части для четкой архитектуры.
 
 ---
 
-## Технологии
+## Стек технологий
 
-### Клиентская часть (Frontend)
+### Фронтенд (Client)
 
-- **React:** Библиотека для создания пользовательских интерфейсов.
-- **TypeScript:** Язык программирования, обеспечивающий статическую типизацию.
-- **`fetch` API (или `axios`):** Для взаимодействия с RESTful API бэкенда.
+- **React**: Библиотека для создания пользовательских интерфейсов.
+- **TypeScript**: Типизированный JavaScript.
+- **Tailwind CSS**: Утилитарный CSS-фреймворк для быстрой стилизации.
+- **Vite**: Быстрый сборщик проектов для React.
 
-### Серверная часть (Backend)
+### Бэкенд (Server)
 
-- **Node.js:** Среда выполнения JavaScript.
-- **Express.js:** Легковесный фреймворк для создания веб-приложений и API.
-- **TypeScript:** Язык программирования, обеспечивающий статическую типизацию.
-- **Prisma ORM:** Современный ORM для взаимодействия с базой данных MongoDB.
-- **`dotenv`:** Для управления переменными окружения.
-- **`cors`:** Middleware для Express для обработки CORS-запросов.
+- **Node.js**: Среда выполнения JavaScript.
+- **Express.js**: Веб-фреймворк для Node.js.
+- **Prisma ORM**: Современный ORM для работы с базами данных (используется с PostgreSQL).
+- **TypeScript**: Типизированный JavaScript.
+- **bcryptjs**: Для хеширования паролей пользователей.
+- **jsonwebtoken**: Для работы с JWT-токенами аутентификации.
 
 ### База данных
 
-- **MongoDB:** NoSQL документоориентированная база данных.
-- **Docker:** Для локального запуска MongoDB в контейнере.
+- **PostgreSQL**: Мощная реляционная база данных.
+- **Docker / Docker Compose**: Для легкого развертывания локальной базы данных PostgreSQL.
+
+---
+
+## Начало работы
+
+Чтобы запустить это приложение на вашей локальной машине, выполните следующие шаги:
+
+### 1\. Клонируйте репозиторий
+
+```bash
+git clone https://github.com/CptKokao/todo-fullstack.git
+cd todo-fullstack
+```
+
+### 2\. Настройте базу данных PostgreSQL с помощью Docker Compose
+
+Убедитесь, что у вас установлен **Docker Desktop** (или Docker Engine на Linux).
+
+Создайте файл `docker-compose.yml` в **корневом каталоге** проекта (`todo-fullstack/`) со следующим содержимым:
+
+```yaml
+# docker-compose.yml
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: todo-postgresql
+    environment:
+      POSTGRES_DB: todo-app-db
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  postgres_data:
+```
+
+Запустите контейнер базы данных:
+
+```bash
+docker compose up -d
+```
+
+Это запустит PostgreSQL на порту `5432`.
+
+### 3\. Настройте бэкенд
+
+Перейдите в каталог бэкенда:
+
+```bash
+cd server
+```
+
+Установите зависимости:
+
+```bash
+npm install
+```
+
+Создайте файл `.env` в каталоге `server` и добавьте следующие переменные:
+
+```dotenv
+# server/.env
+DATABASE_URL="postgresql://myuser:mypassword@localhost:5432/todo-app-db?schema=public"
+PORT=5000
+JWT_SECRET="ваш_очень_секретный_ключ" # Замените на длинную, случайную строку
+```
+
+**Важно**: Убедитесь, что `POSTGRES_USER`, `POSTGRES_PASSWORD` и `POSTGRES_DB` в `DATABASE_URL` совпадают с теми, что вы указали в `docker-compose.yml`.
+
+Выполните миграции Prisma для создания таблиц в базе данных:
+
+```bash
+npx prisma migrate dev --name init_database
+```
+
+Запустите бэкенд сервер:
+
+```bash
+npm run dev # или npm start
+```
+
+Сервер будет работать на `http://localhost:5000`.
+
+### 4\. Настройте фронтенд
+
+Откройте **новое окно терминала** и перейдите в каталог фронтенда:
+
+```bash
+cd ../client
+```
+
+Установите зависимости:
+
+```bash
+npm install
+```
+
+Убедитесь, что ваш `API_BASE_URL` в `src/Welcome.tsx` (или `src/App.tsx` если вы не переименовывали) указывает на порт бэкенда:
+
+```typescript
+// todo-frontend/src/Welcome.tsx
+const API_BASE_URL = "http://localhost:5000/api"; // Убедитесь, что порт соответствует вашему бэкенду
+```
+
+Запустите фронтенд приложение:
+
+```bash
+npm start
+```
+
+Приложение будет доступно по адресу `http://localhost:3000` (или другому порту, указанному Vite).
+
+---
+
+## Использование приложения
+
+1.  Откройте браузер и перейдите по адресу `http://localhost:3000`.
+2.  **Зарегистрируйтесь** с новым email и паролем.
+3.  **Войдите** в систему, используя зарегистрированные учетные данные.
+4.  Вы сможете **добавлять, просматривать, помечать как выполненные/невыполненные, редактировать и удалять** свои задачи.
 
 ---
 
 ## Структура проекта
 
-Проект состоит из двух основных частей:
-
-## Установка и запуск
-
-Для запуска этого приложения вам понадобится установленный **Node.js** и **Docker**.
-
-### 1. Подготовка рабочей среды
-
-1.  **Создайте корневой каталог для проекта:**
-    ```bash
-    mkdir todo-app
-    cd todo-app
-    ```
-2.  **Создайте файл `docker-compose.yml`** в этом корневом каталоге со следующим содержимым:
-
-    ```yaml
-    # docker-compose.yml
-    version: "3.8"
-
-    services:
-      mongodb:
-        image: mongo:latest
-        container_name: todo-mongodb
-        ports:
-          - "27017:27017"
-        environment:
-          MONGO_INITDB_DATABASE: todo-app-db
-        volumes:
-          - mongodb_data:/data/db
-        restart: always
-
-    volumes:
-      mongodb_data:
-    ```
-
-3.  **Запустите MongoDB с помощью Docker:**
-
-    ```bash
-    docker compose up -d
-    ```
-
-    Эта команда скачает образ MongoDB (если его нет) и запустит контейнер MongoDB на порту `27017`.
-    Данные базы данных будут сохраняться в именованном томе Docker `mongodb_data`.
-
-    **Строка подключения к БД:** `mongodb://localhost:27017/todo-app-db`
-
----
-
-### 2. Серверная часть (Backend)
-
-1.  **Инициализируйте проект Node.js с TypeScript:**
-    ```bash
-    mkdir server
-    cd server
-    npm init -y
-    npm install express dotenv cors @prisma/client
-    npm install -D typescript ts-node @types/node @types/express @types/cors prisma ts-node-dev
-    npx tsc --init # Создать tsconfig.json
-    ```
-2.  **Конфигурация tsconfig.json**
-
-    ```json
-    {
-      "compilerOptions": {
-        "target": "ES2020",
-        "module": "CommonJS",
-        "rootDir": "./src",
-        "outDir": "./dist",
-        "esModuleInterop": true,
-        "strict": true,
-        "skipLibCheck": true
-      }
-    }
-    ```
-
-3.  **Конфигурация nodemon.json**
-
-    ```json
-    {
-      "watch": ["src"],
-      "ext": "ts",
-      "ignore": ["dist"],
-      "exec": "ts-node src/index.ts"
-    }
-    ```
-
-4.  **Настройте Prisma:**
-
-    ```bash
-    npx prisma init --datasource-provider postgresql
-    ```
-
-    Это создаст папку `prisma` с файлом `schema.prisma`. Откройте `prisma/schema.prisma` и добавьте следующую модель:
-
-    ```prisma
-    // prisma/schema.prisma
-    generator client {
-      provider = "prisma-client-js"
-    }
-
-    datasource db {
-      provider = "postgresql"
-      url      = env("DATABASE_URL")
-    }
-
-    model Todo {
-      id        String   @id @map("_id") @db.ObjectId
-      title     String
-      description String?
-      completed Boolean  @default(false)
-      createdAt DateTime @default(now())
-      updatedAt DateTime @updatedAt
-    }
-    ```
-
-5.  **Сгенерируйте Prisma Client:**
-
-    ```bash
-    npx prisma generate
-    ```
-
-6.  **Создайте файл `.env`** в корне `todo-backend` на основе `.env.example` и укажите строку подключения к базе данных:
-
-    ```dotenv
-    # todo-backend/.env
-    DATABASE_URL="mongodb://localhost:27017/todo-app-db"
-    PORT=5000
-    ```
-
-7.  **Запустите сервер:**
-    ```bash
-    npm start
-    # или для режима разработки с автоматическим перезапуском:
-    # npm run dev
-    ```
-    Сервер будет запущен на порту `5000` (или другом, указанном в `.env`).
+```
+todo-fullstack/
+├── client/                     # Фронтенд часть (React)
+│   ├── public/
+│   ├── src/
+│   │   ├── components/         # Разделенные компоненты UI
+│   │   │   ├── AuthForm.tsx
+│   │   │   ├── TodoList.tsx
+│   │   │   └── TodoItem.tsx
+│   │   ├── app.css             # Глобальные стили Tailwind CSS
+│   │   ├── Welcome.tsx         # Главный компонент приложения
+│   │   └── main.tsx
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── vite.config.ts
+├── server/                     # Бэкенд часть (Node.js/Express)
+│   ├── prisma/                 # Файлы Prisma (схема, миграции)
+│   │   ├── migrations/
+│   │   └── schema.prisma
+│   ├── src/
+│   │   ├── middleware/
+│   │   │   └── auth.ts         # Middleware для аутентификации
+│   │   └── index.ts            # Главный файл сервера
+│   ├── .env.example
+│   ├── package.json
+│   └── tsconfig.json
+├── .dockerignore
+├── .gitignore
+├── docker-compose.yml          # Конфигурация Docker для PostgreSQL
+└── README.md
+```
 
 ---
