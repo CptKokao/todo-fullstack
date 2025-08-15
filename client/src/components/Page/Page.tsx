@@ -1,40 +1,29 @@
-// todo-frontend/src/Welcome.tsx
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { AuthForm } from "../authForm/authForm";
-import { TodoList } from "../todoList/todoList";
+import { useNavigate } from "react-router";
+import { API_BASE_URL } from "../../shared/api";
+import { TodoList } from "../TodoList/TodoList";
 
-// Interface for Todo (remains the same)
-interface Todo {
-  id: string; // Or number if using PostgreSQL
+export interface Todo {
+  id: string;
+  description: string;
   title: string;
-  description?: string;
   completed: boolean;
+  isOffline?: boolean;
 }
 
-// Interface for Auth Response (remains the same)
-interface AuthResponseData {
-  token: string;
-  userId: string;
-  email: string;
-}
-
-export function Welcome() {
+export function Page() {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-
-  const API_BASE_URL = "http://localhost:8000/api"; // Common base URL for API
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedToken = localStorage.getItem("jwt_token");
     if (storedToken) {
       setToken(storedToken);
-      setIsLoggedIn(true);
-      fetchTodos(storedToken); // Pass token directly to fetchTodos
+
+      fetchTodos(storedToken);
     }
   }, []);
 
@@ -102,71 +91,9 @@ export function Welcome() {
     }
   };
 
-  const handleAuthResponse = (data: AuthResponseData) => {
-    localStorage.setItem("jwt_token", data.token);
-    setToken(data.token);
-    setIsLoggedIn(true);
-    setEmail("");
-    setPassword("");
-    setMessage("");
-    fetchTodos(data.token); // Pass the new token to fetch todos
-  };
-
-  const handleAuthError = async (response: Response) => {
-    const errorData = await response.json();
-    setMessage(errorData.message || "An error occurred.");
-  };
-
-  const handleRegister = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data: AuthResponseData = await response.json();
-        handleAuthResponse(data);
-      } else {
-        handleAuthError(response);
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      setMessage("Network error during registration.");
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data: AuthResponseData = await response.json();
-        handleAuthResponse(data);
-      } else {
-        handleAuthError(response);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setMessage("Network error during login.");
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("jwt_token");
-    setToken(null);
-    setIsLoggedIn(false);
-    setTodos([]);
-    setMessage("You have been logged out.");
+    return navigate(`/`);
   };
 
   const addTodo = async (title: string, description: string) => {
@@ -174,34 +101,32 @@ export function Welcome() {
       setMessage("Task title cannot be empty, or you are not authorized.");
       return;
     }
-    try {
-      const response = await fetch(`${API_BASE_URL}/todos`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title: title,
-          description: description,
-        }),
-      });
-      if (response.ok) {
-        const newTodo: Todo = await response.json();
-        setTodos([...todos, newTodo]);
-        setMessage("");
-        return true; // Indicate success
-      } else if (response.status === 401) {
-        handleLogout();
-        setMessage("Session expired. Please log in again.");
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add todo");
-      }
-    } catch (error: any) {
-      console.error("Error adding todo:", error);
-      setMessage(`Error adding todo: ${error.message || "Unknown error"}`);
-      return false; // Indicate failure
+    // try {
+    const response = await fetch(`${API_BASE_URL}/todos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title: title,
+        description: description,
+      }),
+    });
+
+    if (response.ok) {
+      const newTodo: Todo = await response.json();
+      setTodos((prevTodos) => [
+        ...prevTodos.filter((t) => !t.isOffline),
+        newTodo,
+      ]); // Обновляем, удаляя временную офлайн-задачу
+      setMessage("");
+    } else if (response.status === 401) {
+      handleLogout();
+      setMessage("Session expired. Please log in again.");
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to add todo");
     }
   };
 
@@ -263,32 +188,16 @@ export function Welcome() {
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Todo App
         </h1>
-
-        {message && (
-          <p className="bg-blue-100 text-blue-700 p-3 rounded-md mb-4 text-sm text-center">
-            {message}
-          </p>
-        )}
-
-        {!isLoggedIn ? (
-          <AuthForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            handleLogin={handleLogin}
-            handleRegister={handleRegister}
-          />
-        ) : (
-          <TodoList
-            todos={todos}
-            addTodo={addTodo}
-            updateTodo={updateTodo}
-            toggleTodoCompletion={toggleTodoCompletion}
-            deleteTodo={deleteTodo}
-            handleLogout={handleLogout}
-          />
-        )}
+        {message && <span>{message}</span>}
+        <TodoList
+          todos={todos}
+          setTodos={setTodos}
+          addTodo={addTodo}
+          updateTodo={updateTodo}
+          toggleTodoCompletion={toggleTodoCompletion}
+          deleteTodo={deleteTodo}
+          handleLogout={handleLogout}
+        />
       </div>
     </div>
   );

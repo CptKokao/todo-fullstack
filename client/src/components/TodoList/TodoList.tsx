@@ -1,22 +1,15 @@
-// todo-frontend/src/components/TodoList.tsx
 import React, { useState } from "react";
-import { TodoItem } from "../todoItem/todoItem"; // Импортируем TodoItem
-
-// Интерфейс для Todo (оставляем как есть)
-interface Todo {
-  id: string; // Или number, если вы используете PostgreSQL
-  title: string;
-  description?: string;
-  completed: boolean;
-}
+import { TodoItem } from "../TodoItem/TodoItem";
+import { Todo } from "../Page/Page";
 
 interface TodoListProps {
   todos: Todo[];
-  addTodo: (title: string, description: string) => Promise<boolean>;
+  addTodo: (title: string, description: string) => Promise<void>;
   toggleTodoCompletion: (id: string, completed: boolean) => void;
   deleteTodo: (id: string) => void;
-  updateTodo: (id: string, title: string, description: string) => void; // НОВОЕ: функция для обновления
+  updateTodo: (id: string, title: string, description: string) => void;
   handleLogout: () => void;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -24,19 +17,46 @@ export const TodoList: React.FC<TodoListProps> = ({
   addTodo,
   toggleTodoCompletion,
   deleteTodo,
-  updateTodo, // НОВОЕ
+  updateTodo,
   handleLogout,
+  setTodos,
 }) => {
   const [newTodoTitle, setNewTodoTitle] = useState("");
   const [newTodoDescription, setNewTodoDescription] = useState("");
-  const [editingTodoId, setEditingTodoId] = useState<string | null>(null); // НОВОЕ: Состояние для ID редактируемой задачи
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
 
   const handleAddTodo = async () => {
-    const success = await addTodo(newTodoTitle, newTodoDescription);
-    if (success) {
-      setNewTodoTitle("");
-      setNewTodoDescription("");
-    }
+    if (!newTodoTitle.trim()) return;
+
+    // Создаем временный офлайн-объект задачи
+    const offlineTodo: Todo = {
+      id: `offline-${Date.now()}`, // Временный уникальный ID
+      title: newTodoTitle,
+      description: newTodoDescription,
+      completed: false,
+      isOffline: true,
+    };
+
+    // Обновляем UI мгновенно, чтобы пользователь видел задачу
+    // Мы добавили задачу в список, даже если нет интернета
+    setTodos((prevTodos) => [...prevTodos, offlineTodo]);
+
+    // Сбрасываем поля ввода
+    setNewTodoTitle("");
+    setNewTodoDescription("");
+
+    // Пытаемся добавить задачу на сервер, но не ждем результат
+    // Service Worker перехватит этот запрос и поставит в очередь при офлайне
+    addTodo(offlineTodo.title, offlineTodo.description)
+      .then((success) => {
+        // Здесь можно добавить логику, если нужно. Например, убрать флаг isOffline
+        // Однако, Service Worker сам перехватит ответ и обновит кэш
+      })
+      .catch((error) => {
+        // При ошибке Service Worker поставит запрос в очередь.
+        // Никаких дополнительных действий не требуется.
+        console.log("Request queued for background sync:", error);
+      });
   };
 
   return (
