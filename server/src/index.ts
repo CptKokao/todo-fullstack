@@ -106,7 +106,7 @@ app.get("/api/todos", auth, async (req: AuthRequest, res) => {
 });
 
 // Создать новую задачу
-app.post("/api/todos", auth, async (req: AuthRequest, res) => {
+app.post("/api/add", auth, async (req: AuthRequest, res) => {
   const { title, description } = req.body;
   if (!title) {
     return res.status(400).json({ error: 'Поле "title" обязательно' });
@@ -127,7 +127,7 @@ app.post("/api/todos", auth, async (req: AuthRequest, res) => {
 });
 
 // Обновить задачу по ID
-app.put("/api/todos/:id", auth, async (req: AuthRequest, res) => {
+app.put("/api/update/:id", auth, async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   const userId = Number(req.userId);
   const { title, description, completed } = req.body;
@@ -152,7 +152,7 @@ app.put("/api/todos/:id", auth, async (req: AuthRequest, res) => {
 });
 
 // Удалить задачу по ID
-app.delete("/api/todos/:id", auth, async (req: AuthRequest, res) => {
+app.delete("/api/delete/:id", auth, async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   const userId = Number(req.userId);
 

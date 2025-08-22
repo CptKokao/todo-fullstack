@@ -20,7 +20,7 @@ export const AuthForm = () => {
     setEmail("");
     setPassword("");
     setMessage("");
-    return navigate(`/todo`);
+    return navigate(`/`);
   };
 
   const handleAuthError = async (response: Response) => {

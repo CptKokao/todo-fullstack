@@ -102,7 +102,7 @@ export function Page() {
       return;
     }
     // try {
-    const response = await fetch(`${API_BASE_URL}/todos`, {
+    const response = await fetch(`${API_BASE_URL}/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -133,7 +133,7 @@ export function Page() {
   const toggleTodoCompletion = async (id: string, completed: boolean) => {
     if (!token) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/update/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +162,7 @@ export function Page() {
   const deleteTodo = async (id: string) => {
     if (!token) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/delete/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -185,7 +185,7 @@ export function Page() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center font-[Honk]">
           Todo App
         </h1>
         {message && <span>{message}</span>}
